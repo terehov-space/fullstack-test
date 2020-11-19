@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use \App\Http\Controllers\AuthController;
 use \App\Http\Controllers\BoardController;
+use \App\Http\Controllers\TaskController;
 
 /*
 |--------------------------------------------------------------------------
@@ -37,5 +38,13 @@ Route::group(['middleware' => 'api',], function () {
         Route::post('/{id}', [BoardController::class, 'update']);
 
         Route::delete('/{id}', [BoardController::class, 'delete']);
+    });
+
+    Route::group(['prefix' => 'tasks',], function () {
+        Route::post('/', [TaskController::class, 'create']);
+
+        Route::post('/{id}', [TaskController::class, 'update']);
+
+        Route::delete('/{id}', [TaskController::class, 'delete']);
     });
 });
