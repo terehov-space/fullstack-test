@@ -32,9 +32,9 @@
 
                     <b-card-text>
                             <draggable class="list-group" tag="ul" v-model="item.tasks" v-bind="dragOptions" :move="onMove" v-on:add="onAdd"
-                                       @start="isDragging=true" @end="isDragging=false">
+                                       :sort="false" @start="isDragging=true" @end="isDragging=false">
                                 <transition-group type="transition" :name="'flip-list'" v-bind:board="item.id">
-                                    <li class="list-group-item" v-for="task in item.tasks" :key="task.id" @click="openEditTaskForm(task)" v-bind:task="task.id">
+                                    <li class="list-group-item" v-for="task in item.tasks" :key="task.id" @click="openEditTaskForm(task)" v-bind:task="task.id" v-bind:sort="task.sort">
                                         {{task.title}}
                                     </li>
                                 </transition-group>
@@ -42,38 +42,6 @@
                     </b-card-text>
 
                     <b-button href="#" variant="primary" @click="openAddTaskForm(item.id)">Add</b-button>
-                    <b-button href="#" variant="danger" @click="deleteBoard(item)">Delete</b-button>
-                </b-card>
-            </b-row>
-        </b-container>
-        <b-container fluid>
-            <b-row class="d-flex flex-row flex-nowrap overflow-auto">
-                <b-card
-                    v-for="item in boardsData"
-                    :key="item.id"
-                    :title="item.title"
-                    class="col-xs-6 col-sm-5 col-md-4 col-lg-3"
-                >
-                    <b-card-text>
-                        <b-card
-                            v-if="item.tasks"
-                            v-for="task in item.tasks"
-                            :key="task.id"
-                        >
-                            <b-card-title>
-                                {{ task.title }}
-                            </b-card-title>
-
-                            <b-card-text>
-                                <b-button href="#" variant="success" @click="openEditTaskForm(task)">Edit task
-                                </b-button>
-                                <b-button href="#" variant="danger" @click="deleteTask(task)">Delete task</b-button>
-                            </b-card-text>
-                        </b-card>
-                    </b-card-text>
-
-                    <b-button href="#" variant="primary" @click="openAddTaskForm(item.id)">Add</b-button>
-                    <b-button href="#" variant="success" @click="openEditBoardForm(item)">Edit</b-button>
                     <b-button href="#" variant="danger" @click="deleteBoard(item)">Delete</b-button>
                 </b-card>
                 <b-card
@@ -158,14 +126,6 @@
                         v-model="form.task.sort"
                         placeholder="Enter sort"
                     ></b-form-input>
-                </b-form-group>
-                <b-form-group label="Board:" label-for="input-board">
-                    <b-form-select
-                        id="input-board"
-                        v-model="form.task.board_id"
-                        :options="boardsData"
-                        required
-                    ></b-form-select>
                 </b-form-group>
 
             </b-form>
@@ -359,6 +319,9 @@ export default {
 
             this.updateTaskBoard(elementId, boardId);
         },
+        onSort(event) {
+            console.log(event);
+        }
     },
     mounted() {
         this.$store.dispatch('checkLoggedIn');
