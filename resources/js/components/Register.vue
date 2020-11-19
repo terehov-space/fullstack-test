@@ -72,9 +72,6 @@ export default {
             this.$router.push('/');
         }
     },
-    mounted() {
-        this.$store.dispatch('checkLoggedIn');
-    }
 }
 </script>
 

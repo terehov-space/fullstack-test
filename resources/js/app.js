@@ -1,6 +1,7 @@
-import 'bootstrap/dist/css/bootstrap.css'
-import 'bootstrap-vue/dist/bootstrap-vue.css'
-import './../css/app.css'
+import 'bootstrap/dist/css/bootstrap.css';
+import 'bootstrap-vue/dist/bootstrap-vue.css';
+import './../css/app.css';
+import 'bootstrap-horizon/src/bootstrap-horizon.css';
 
 import Vue from 'vue';
 
