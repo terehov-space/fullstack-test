@@ -31,7 +31,7 @@ class TaskController extends Controller
     {
         $task = Task::find($id);
 
-        $taskData = request(['title', 'sort']);
+        $taskData = request(['title', 'sort', 'board_id']);
 
         if ($task) {
             foreach ($taskData as $key => $data) {

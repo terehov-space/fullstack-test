@@ -14,8 +14,23 @@ class Board extends Model
         'sort',
     ];
 
+    protected $appends = [
+        'text',
+        'value',
+    ];
+
     public function tasks()
     {
         return $this->hasMany('App\Models\Task', 'board_id', 'id');
+    }
+
+    public function getTextAttribute()
+    {
+        return $this->title;
+    }
+
+    public function getValueAttribute()
+    {
+        return $this->id;
     }
 }

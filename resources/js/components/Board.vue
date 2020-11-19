@@ -34,13 +34,20 @@
                             :key="task.id"
                         >
                             <b-card-title>
-                                {{ task.title }} <b-button href="#" variant="primary" @click="openEditTaskForm(task)">Edit task</b-button>
+                                {{ task.title }}
                             </b-card-title>
+
+                            <b-card-text>
+                                <b-button href="#" variant="success" @click="openEditTaskForm(task)">Edit task
+                                </b-button>
+                                <b-button href="#" variant="danger" @click="deleteTask(task)">Delete task</b-button>
+                            </b-card-text>
                         </b-card>
                     </b-card-text>
 
-                    <b-button href="#" variant="primary" @click="openAddTaskForm(item.id)">Add new task</b-button>
-                    <b-button href="#" variant="primary" @click="openEditBoardForm(item)">Edit board</b-button>
+                    <b-button href="#" variant="primary" @click="openAddTaskForm(item.id)">Add</b-button>
+                    <b-button href="#" variant="success" @click="openEditBoardForm(item)">Edit</b-button>
+                    <b-button href="#" variant="danger" @click="deleteBoard(item)">Delete</b-button>
                 </b-card>
                 <b-card
                     title="Add new board"
@@ -102,7 +109,7 @@
             </b-form>
         </b-modal>
 
-        <b-modal id="edit-task" title="Add new task" @hidden="resetTaskForm" @ok="updateTask">
+        <b-modal id="edit-task" title="Edit task" @hidden="resetTaskForm" @ok="updateTask">
             <b-form @submit="addTask">
                 <b-form-group
                     label="Title:"
@@ -125,10 +132,19 @@
                         placeholder="Enter sort"
                     ></b-form-input>
                 </b-form-group>
+                <b-form-group label="Board:" label-for="input-board">
+                    <b-form-select
+                        id="input-board"
+                        v-model="form.task.board_id"
+                        :options="boardsData"
+                        required
+                    ></b-form-select>
+                </b-form-group>
+
             </b-form>
         </b-modal>
 
-        <b-modal id="edit-board" title="Add new task" @hidden="resetBoardForm" @ok="updateBoard">
+        <b-modal id="edit-board" title="Edit board" @hidden="resetBoardForm" @ok="updateBoard">
             <b-form @submit="updateBoard">
                 <b-form-group
                     label="Title:"
@@ -200,24 +216,24 @@ export default {
                 this.$store.dispatch('getBoards');
             });
         },
-        updateBoard(evt) {
-            evt.preventDefault();
+        updateBoard() {
             this.$http.post('http://127.0.0.1:8000/api/boards/' + this.form.board.id, this.form.board).then((response) => {
                 this.resetBoardForm();
 
                 this.$store.dispatch('getBoards');
             });
-
-            this.$bvModal.hide('edit-board');
+        },
+        deleteBoard(board) {
+            this.$http.delete('http://127.0.0.1:8000/api/boards/' + board.id).then((response) => {
+                this.$store.dispatch('getBoards');
+            });
         },
 
-        resetBoardForm()
-        {
+        resetBoardForm() {
             this.form.board.title = "";
             this.form.board.sort = 100;
         },
-        resetTaskForm()
-        {
+        resetTaskForm() {
             this.form.task.title = null;
             this.form.task.sort = 100;
             this.form.task.board_id = null;
@@ -229,8 +245,6 @@ export default {
 
                 this.$store.dispatch('getBoards');
             });
-
-            this.$bvModal.hide('add-task');
         },
         updateTask() {
             this.$http.post('http://127.0.0.1:8000/api/tasks/' + this.form.task.id, this.form.task).then((response) => {
@@ -238,17 +252,18 @@ export default {
 
                 this.$store.dispatch('getBoards');
             });
-
-            this.$bvModal.hide('edit-task');
+        },
+        deleteTask(task) {
+            this.$http.delete('http://127.0.0.1:8000/api/tasks/' + task.id).then((response) => {
+                this.$store.dispatch('getBoards');
+            });
         },
 
-        openAddTaskForm(board_id)
-        {
+        openAddTaskForm(board_id) {
             this.form.task.board_id = board_id;
             this.$bvModal.show('add-task')
         },
-        openEditTaskForm(task)
-        {
+        openEditTaskForm(task) {
             this.form.task.board_id = task.board_id;
             this.form.task.title = task.title;
             this.form.task.sort = task.sort;
@@ -256,8 +271,7 @@ export default {
 
             this.$bvModal.show('edit-task')
         },
-        openEditBoardForm(board)
-        {
+        openEditBoardForm(board) {
             this.form.board.title = board.title;
             this.form.board.sort = board.sort;
             this.form.board.id = board.id;
