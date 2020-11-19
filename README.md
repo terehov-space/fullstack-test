@@ -4,24 +4,25 @@ composer install
 ```
 
 # 2 step
+Init database
 ```
 php artisan migrate:fresh
 ```
 
 # 3 step
-Init database
+set jwt secret key
 ```
 php artisan jwt:secret
 ```
 
 # 4 step
-Init supervisor
+install npm packages
 ```
 npm install
 ```
 
 # 5 step
-Init supervisor
+Build project
 ```
 npm run dev
 ```
