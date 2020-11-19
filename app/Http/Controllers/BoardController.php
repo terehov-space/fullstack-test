@@ -16,7 +16,9 @@ class BoardController extends Controller
 
     public function get()
     {
-        return Board::with('tasks')->orderBy('sort')->get();
+        return Board::with(['tasks' => function ($query) {
+            $query->orderBy('sort', 'DESC');
+        }])->orderBy('sort')->get();
     }
 
     public function create()
