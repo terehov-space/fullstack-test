@@ -20,6 +20,33 @@
             </b-collapse>
         </b-navbar>
         <b-container fluid>
+            <b-row>
+                <b-card
+                    v-for="item in boardsData"
+                    :key="item.id"
+                    class="col-xs-6 col-sm-5 col-md-4 col-lg-3"
+                >
+                    <b-card-title @click="openEditBoardForm(item)">
+                        {{ item.title }}
+                    </b-card-title>
+
+                    <b-card-text>
+                            <draggable class="list-group" tag="ul" v-model="item.tasks" v-bind="dragOptions" :move="onMove" v-on:add="onAdd"
+                                       @start="isDragging=true" @end="isDragging=false">
+                                <transition-group type="transition" :name="'flip-list'" v-bind:board="item.id">
+                                    <li class="list-group-item" v-for="task in item.tasks" :key="task.id" @click="openEditTaskForm(task)" v-bind:task="task.id">
+                                        {{task.title}}
+                                    </li>
+                                </transition-group>
+                            </draggable>
+                    </b-card-text>
+
+                    <b-button href="#" variant="primary" @click="openAddTaskForm(item.id)">Add</b-button>
+                    <b-button href="#" variant="danger" @click="deleteBoard(item)">Delete</b-button>
+                </b-card>
+            </b-row>
+        </b-container>
+        <b-container fluid>
             <b-row class="d-flex flex-row flex-nowrap overflow-auto">
                 <b-card
                     v-for="item in boardsData"
@@ -173,8 +200,13 @@
 </template>
 
 <script>
+import draggable from 'vuedraggable'
+
 export default {
     name: "Board",
+    components: {
+        draggable
+    },
     data: function () {
         return {
             form: {
@@ -189,7 +221,10 @@ export default {
                     sort: null,
                     board_id: null,
                 }
-            }
+            },
+            editable: true,
+            isDragging: false,
+            delayedDragging: false
         };
     },
     computed: {
@@ -199,6 +234,20 @@ export default {
         boardsData() {
             return this.$store.state.boards;
         },
+        dragOptions() {
+            return {
+                animation: 0,
+                group: "description",
+                disabled: !this.editable,
+                ghostClass: "ghost",
+            };
+        },
+        listString() {
+            return JSON.stringify(this.list, null, 2);
+        },
+        list2String() {
+            return JSON.stringify(this.list2, null, 2);
+        }
     },
     methods: {
         logout() {
@@ -258,6 +307,18 @@ export default {
                 this.$store.dispatch('getBoards');
             });
         },
+        updateTaskBoard(taskId, boardId)
+        {
+            let update = {
+              board_id: boardId,
+            };
+
+            this.$http.post('http://127.0.0.1:8000/api/tasks/' + taskId, update).then((response) => {
+                this.resetTaskForm();
+
+                this.$store.dispatch('getBoards');
+            });
+        },
 
         openAddTaskForm(board_id) {
             this.form.task.board_id = board_id;
@@ -278,6 +339,26 @@ export default {
 
             this.$bvModal.show('edit-board')
         },
+
+        orderList() {
+            this.list = this.list.sort((one, two) => {
+                return one.order - two.order;
+            });
+        },
+        onMove({relatedContext, draggedContext}) {
+            const relatedElement = relatedContext.element;
+            const draggedElement = draggedContext.element;
+            return (
+                (!relatedElement || !relatedElement.fixed) && !draggedElement.fixed
+            );
+        },
+        onAdd(event) {
+            console.log(event);
+            let elementId = event.item.attributes.task.value;
+            let boardId = event.to.attributes.board.value;
+
+            this.updateTaskBoard(elementId, boardId);
+        },
     },
     mounted() {
         this.$store.dispatch('checkLoggedIn');
@@ -294,5 +375,30 @@ export default {
 <style scoped>
 .board {
     max-height: 300px;
+}
+
+.flip-list-move {
+    transition: transform 0.5s;
+}
+
+.no-move {
+    transition: transform 0s;
+}
+
+.ghost {
+    opacity: 0.5;
+    background: #c8ebfb;
+}
+
+.list-group {
+    min-height: 20px;
+}
+
+.list-group-item {
+    cursor: move;
+}
+
+.list-group-item i {
+    cursor: pointer;
 }
 </style>
