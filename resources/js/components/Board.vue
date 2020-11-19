@@ -32,12 +32,15 @@
                             v-if="item.tasks"
                             v-for="task in item.tasks"
                             :key="task.id"
-                            :title="task.title"
                         >
+                            <b-card-title>
+                                {{ task.title }} <b-button href="#" variant="primary" @click="openEditTaskForm(task)">Edit task</b-button>
+                            </b-card-title>
                         </b-card>
                     </b-card-text>
 
                     <b-button href="#" variant="primary" @click="openAddTaskForm(item.id)">Add new task</b-button>
+                    <b-button href="#" variant="primary" @click="openEditBoardForm(item)">Edit board</b-button>
                 </b-card>
                 <b-card
                     title="Add new board"
@@ -98,6 +101,58 @@
                 </b-form-group>
             </b-form>
         </b-modal>
+
+        <b-modal id="edit-task" title="Add new task" @hidden="resetTaskForm" @ok="updateTask">
+            <b-form @submit="addTask">
+                <b-form-group
+                    label="Title:"
+                    label-for="input-title"
+                >
+                    <b-form-input
+                        id="input-title"
+                        v-model="form.task.title"
+                        required
+                        placeholder="Enter title"
+                    ></b-form-input>
+                </b-form-group>
+                <b-form-group
+                    label="Sort:"
+                    label-for="input-sort"
+                >
+                    <b-form-input
+                        id="input-sort"
+                        v-model="form.task.sort"
+                        placeholder="Enter sort"
+                    ></b-form-input>
+                </b-form-group>
+            </b-form>
+        </b-modal>
+
+        <b-modal id="edit-board" title="Add new task" @hidden="resetBoardForm" @ok="updateBoard">
+            <b-form @submit="updateBoard">
+                <b-form-group
+                    label="Title:"
+                    label-for="input-title"
+                >
+                    <b-form-input
+                        id="input-title"
+                        v-model="form.board.title"
+                        required
+                        placeholder="Enter title"
+                    ></b-form-input>
+                </b-form-group>
+                <b-form-group
+                    label="Sort:"
+                    label-for="input-sort"
+                >
+                    <b-form-input
+                        id="input-sort"
+                        v-model="form.board.sort"
+                        placeholder="Enter sort"
+                    ></b-form-input>
+                </b-form-group>
+            </b-form>
+        </b-modal>
     </div>
 </template>
 
@@ -108,10 +163,12 @@ export default {
         return {
             form: {
                 board: {
+                    id: null,
                     title: null,
                     sort: null,
                 },
                 task: {
+                    id: null,
                     title: null,
                     sort: null,
                     board_id: null,
@@ -133,24 +190,31 @@ export default {
             this.$http.defaults.headers.Authorization = "";
             this.$store.dispatch('checkLoggedIn');
         },
+
         addBoard(evt) {
             evt.preventDefault();
-            console.log('addBoard');
+
             this.$http.post('http://127.0.0.1:8000/api/boards', this.form.board).then((response) => {
-                this.resetAddBoard();
+                this.resetBoardForm();
 
                 this.$store.dispatch('getBoards');
             });
         },
-        resetAddBoard()
+        updateBoard(evt) {
+            evt.preventDefault();
+            this.$http.post('http://127.0.0.1:8000/api/boards/' + this.form.board.id, this.form.board).then((response) => {
+                this.resetBoardForm();
+
+                this.$store.dispatch('getBoards');
+            });
+
+            this.$bvModal.hide('edit-board');
+        },
+
+        resetBoardForm()
         {
             this.form.board.title = "";
             this.form.board.sort = 100;
-        },
-        openAddTaskForm(board_id)
-        {
-            this.form.task.board_id = board_id;
-            this.$bvModal.show('add-task')
         },
         resetTaskForm()
         {
@@ -158,6 +222,7 @@ export default {
             this.form.task.sort = 100;
             this.form.task.board_id = null;
         },
+
         addTask() {
             this.$http.post('http://127.0.0.1:8000/api/tasks', this.form.task).then((response) => {
                 this.resetTaskForm();
@@ -167,13 +232,45 @@ export default {
 
             this.$bvModal.hide('add-task');
         },
+        updateTask() {
+            this.$http.post('http://127.0.0.1:8000/api/tasks/' + this.form.task.id, this.form.task).then((response) => {
+                this.resetTaskForm();
+
+                this.$store.dispatch('getBoards');
+            });
+
+            this.$bvModal.hide('edit-task');
+        },
+
+        openAddTaskForm(board_id)
+        {
+            this.form.task.board_id = board_id;
+            this.$bvModal.show('add-task')
+        },
+        openEditTaskForm(task)
+        {
+            this.form.task.board_id = task.board_id;
+            this.form.task.title = task.title;
+            this.form.task.sort = task.sort;
+            this.form.task.id = task.id;
+
+            this.$bvModal.show('edit-task')
+        },
+        openEditBoardForm(board)
+        {
+            this.form.board.title = board.title;
+            this.form.board.sort = board.sort;
+            this.form.board.id = board.id;
+
+            this.$bvModal.show('edit-board')
+        },
     },
     mounted() {
         this.$store.dispatch('checkLoggedIn');
 
         this.$store.dispatch('getBoards');
 
-        this.resetAddBoard();
+        this.resetBoardForm();
 
         this.resetTaskForm();
     }

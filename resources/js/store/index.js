@@ -25,6 +25,8 @@ export default new Vuex.Store({
             axios.post('http://127.0.0.1:8000/api/auth/me').then((response) => {
                 this.commit('SET_USERDATA', response.data);
             }).catch((e) => {
+                axios.defaults.headers.Authorization = "";
+                localStorage.removeItem('token');
                 if (router.currentRoute.path != '/')
                     router.push({name: 'Login'});
             });
@@ -33,6 +35,8 @@ export default new Vuex.Store({
             axios.get('http://127.0.0.1:8000/api/boards/').then((response) => {
                 this.commit('SET_BOARDS', response.data);
             }).catch((e) => {
+                axios.defaults.headers.Authorization = "";
+                localStorage.removeItem('token');
                 if (router.currentRoute.path != '/')
                     router.push({name: 'Login'});
             });
